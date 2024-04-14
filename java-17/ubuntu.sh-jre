@@ -23,7 +23,9 @@ EOF
 
 
 chroot jammy apt update
+chroot jammy apt upgrade -y
 chroot jammy apt -y install --no-install-recommends openjdk-17-jre curl
+chroot jammy apt autoremove --purge -y
 chroot jammy apt clean
 chroot jammy rm -rf /var/cache/apt /var/lib/apt
 umount jammy/dev

@@ -25,11 +25,14 @@ EOF
 cat <<EOF > noble/chroot.sh
 #!/bin/sh
 apt update
-apt-get install -y --no-install-recommends openjdk-21-jdk maven python3-pip wget curl unzip zip 
+apt upgrade -y
+apt-get install -y --no-install-recommends openjdk-21-jdk
+apt-get install -y --no-install-recommends maven python3-pip wget curl unzip zip 
 pip3 install conan --break-system-packages 
 sh -c 'wget -qO -  https://services.gradle.org/distributions/gradle-${GRADLE_VER}-bin.zip | (cd /usr/local/share && jar xv ) '
 chmod 755  /usr/local/share/gradle-${GRADLE_VER}/bin/gradle
 ln -s chmod 755  /usr/local/share/gradle-${GRADLE_VER}/bin/gradle /usr/local/bin
+apt-get autoremove --purge -y
 apt-get clean &&  rm -rf /var/cache/apt /var/lib/apt /root/.cache /root/.gradle
 rm -rf /var/cache/apt /var/lib/apt /chroot.sh
 EOF

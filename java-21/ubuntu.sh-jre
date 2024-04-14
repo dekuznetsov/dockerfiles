@@ -23,8 +23,10 @@ EOF
 
 
 chroot noble apt update
+chroot noble apt upgrade -y
 chroot noble apt -y install --no-install-recommends openjdk-21-jre curl
 chroot noble apt clean
+chroot noble apt autoremove --purge
 chroot noble rm -rf /var/cache/apt /var/lib/apt
 umount noble/dev
 umount noble/proc
