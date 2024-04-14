@@ -1,0 +1,15 @@
+FROM ubuntu:24.04
+ARG GRADLE_VER 8.6
+
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt-get update \
+    && apt-get install -y openjdk-21-jdk maven python3-pip wget curl unzip zip \
+    && pip3 install conan --break-system-packages \
+    && curl https://services.gradle.org/distributions/gradle-${GRADLE_VER}-bin.zip \
+    && wget -qO -  https://services.gradle.org/distributions/gradle-8.7-bin.zip | (cd /usr/local/share && jar xv ) \
+    && chmod 755  /usr/local/share/gradle-8.7/bin/gradle \
+    && ln -s chmod 755  /usr/local/share/gradle-8.7/bin/gradle /usr/local/bin \
+    && apt-get clean &&  rm -rf /var/cache/apt /var/lib/apt /root/.cache /root/.gradle
+
+
+
