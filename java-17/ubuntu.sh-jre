@@ -1,0 +1,32 @@
+#/bin/sh
+
+export DEBIAN_FRONTEND=noninteractive
+apt update
+apt install -y debootstrap docker.io
+debootstrap --variant=minbase jammy jammy
+mount -o bind /proc jammy/proc
+mount -o bind /dev jammy/dev
+mount -o bind /sys jammy/sys
+
+cat <<EOF >  /jammy/etc/apt/sources.list
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy universe
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-updates universe
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy multiverse
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-updates multiverse
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-backports main restricted universe multiverse
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-security universe
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-security multiverse
+EOF
+
+
+chroot jammy apt update
+chroot jammy apt -y install --no-install-recommends openjdk-17-jre curl
+chroot jammy apt clean
+chroot jammy rm -rf /var/cache/apt /var/lib/apt
+umount jammy/dev
+umount jammy/proc
+umount jammy/sys
+tar -C jammy -c . | docker import - jammy-jre

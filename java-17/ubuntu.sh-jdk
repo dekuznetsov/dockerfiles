@@ -1,0 +1,43 @@
+#/bin/sh -x
+
+export DEBIAN_FRONTEND=noninteractive
+export GRADLE_VER=8.7
+apt update
+apt install -y debootstrap docker.io
+debootstrap --variant=minbase jammy jammy
+mount -o bind /proc jammy/proc
+mount -o bind /dev jammy/dev
+mount -o bind /sys jammy/sys
+
+cat <<EOF >  /jammy/etc/apt/sources.list
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy universe
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-updates universe
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy multiverse
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-updates multiverse
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-backports main restricted universe multiverse
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-security universe
+deb http://ports.ubuntu.com/ubuntu-ports/ jammy-security multiverse
+EOF
+
+cat <<EOF > jammy/chroot.sh
+#!/bin/sh
+apt update
+apt-get install -y --no-install-recommends openjdk-17-jdk maven python3-pip wget curl unzip zip 
+pip3 install conan
+sh -c 'wget -qO -  https://services.gradle.org/distributions/gradle-${GRADLE_VER}-bin.zip | (cd /usr/local/share && jar xv ) '
+chmod 755  /usr/local/share/gradle-${GRADLE_VER}/bin/gradle
+ln -s chmod 755  /usr/local/share/gradle-${GRADLE_VER}/bin/gradle /usr/local/bin
+apt-get clean &&  rm -rf /var/cache/apt /var/lib/apt /root/.cache /root/.gradle
+rm -rf /var/cache/apt /var/lib/apt /chroot.sh
+EOF
+
+cat jammy/chroot.sh
+chroot jammy sh -x chroot.sh 
+
+umount jammy/dev
+umount jammy/proc
+umount jammy/sys
+tar -C jammy -c . | docker import - jammy-jdk
